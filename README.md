@@ -1,10 +1,10 @@
-# Chess RL v1.0.0
+# Chess RL v1.0.1
 
 ## Overview
 Tensorflow program that learns to play chess via Reinforcement Learning.
 
 ## Description
-This program learns to play chess via reinforcement learning. The action-value functions are learned by training a neural network on the total return of randomly-initialized board states, determined by Monte Carlo simulations. The program follows an epsilon-greedy policy based on the most current action-value function approximations. As of v1.0.0, each training step is trained on one Monte Carlo simulations -- future releases will increase training batch size.
+This program learns to play chess via reinforcement learning. The action-value functions are learned by training a neural network on the total return of randomly-initialized board states, determined by Monte Carlo simulations. The program follows an epsilon-greedy policy based on the most current action-value function approximations. As of v1.0.1, each training step is trained on batches of full-depth Monte Carlo simulations.
 
 The game's basic rules are encoded in *pieces.py* and the board state parameters are defined in *state.py*. Once a proper action-value function is converged upon, it can be implemented with a greedy policy for purposes of gameplay.
 
@@ -20,7 +20,7 @@ The game's basic rules are encoded in *pieces.py* and the board state parameters
 NUM_TRAINING = 1000		# Number of training steps
 HIDDEN_UNITS = 100		# Number of hidden units
 LEARNING_RATE = 0.001	# Learning rate
-BATCH_SIZE = 5			# Batch size (pending)
+BATCH_SIZE = 5			# Batch size
 # Simulation Parameters
 MAX_MOVES = 100			# Maximum number of moves for Monte Carlo
 EPSILON = 0.2			# Defining epsilon for e-greedy policy
@@ -45,7 +45,9 @@ with tf.name_scope("Output_Data"):		# Output data filenames (.txt)
 6. Upon completion of training, training loss at each step is written to an output .txt file for analysis.
 
 ## Update Log
-_v1.0.0_: Beta version. v1.0.1 will feature bug fixes and support for high training batch sizes.
+_v1.0.1_: Bug fixes and support for large training batches. Future updates will include a test bench program for validation.
+
+_v1.0.0_: Beta version.
 
 ### Notes
 **(1)** This program was built on Python 3.6 and Tensorflow 1.5.
