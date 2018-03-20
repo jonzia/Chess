@@ -197,8 +197,11 @@ def generate_game(batch_size=BATCH_SIZE,max_moves=MAX_MOVES,epsilon=EPSILON):
 						break
 			# Else, act greedy w.r.t. expected return
 			else:
-				# Identify indices of maximum return
-				move_choice = np.nonzero(return_array.max() == return_array)
+				# Identify indices of maximum return (white) or minimum return (black)
+				if player == 'white':
+					move_choice = np.nonzero(return_array.max() == return_array)
+				else:
+					move_choice = np.nonzero(return_array.min() == return_array)
 				piece_index = move_choice[0][0]
 				move_index = move_choice[1][0]
 				# Perform move and update player
