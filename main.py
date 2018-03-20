@@ -37,10 +37,10 @@ LOAD_FILE = False 		# Load initial value model from saved checkpoint?
 # ----------------------------------------------------
 # Specify filenames
 # Root directory:
-dir_name = "D:\\Documents"
+dir_name = "Users/jonathanzia"
 with tf.name_scope("Model_Data"):		# Model save/load paths
-	load_path = os.path.join(dir_name, "checkpoints\\model")			# Load previous model
-	save_path = os.path.join(dir_name, "checkpoints\\model")			# Save model at each step
+	load_path = os.path.join(dir_name, "checkpoints/model")			# Load previous model
+	save_path = os.path.join(dir_name, "checkpoints/model")			# Save model at each step
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
 	filewriter_path = os.path.join(dir_name, "output")
 with tf.name_scope("Output_Data"):		# Output data filenames (.txt)
@@ -177,7 +177,7 @@ def generate_game(batch_size=BATCH_SIZE,max_moves=MAX_MOVES,epsilon=EPSILON):
 						temp_board_state = s.board_state(temp_pieces)	# Obtain temporary state
 
 						# With temporary state, calculate expected return
-						expected_return = sess.run(predictions_temp, feed_dict={inputs_temp: np.reshape(temp_board_state,(1,768))})
+						expected_return = sess.run(predictions, feed_dict={inputs: np.reshape(temp_board_state,(1,768))})
 						# Write estimated return to return_array
 						return_array[i,j] = expected_return
 
@@ -222,9 +222,8 @@ def generate_game(batch_size=BATCH_SIZE,max_moves=MAX_MOVES,epsilon=EPSILON):
 # Create placeholders for inputs and target values
 # Input dimensions: 8 x 8 x 12
 # Target dimensions: 1 x 1
-inputs = tf.placeholder(tf.float32,[BATCH_SIZE,768],name='Inputs')
-targets = tf.placeholder(tf.float32,shape=(BATCH_SIZE,1),name='Targets')
-inputs_temp = tf.placeholder(tf.float32,[1,768])	# For use with generate_game()
+inputs = tf.placeholder(tf.float32,[None,768],name='Inputs')
+targets = tf.placeholder(tf.float32,shape=(None,1),name='Targets')
 
 
 # ----------------------------------------------------
@@ -232,11 +231,9 @@ inputs_temp = tf.placeholder(tf.float32,[1,768])	# For use with generate_game()
 # ----------------------------------------------------
 # First fully-connected layer
 hidden = tf.contrib.layers.fully_connected(inputs,num_outputs=HIDDEN_UNITS)
-hidden_temp = tf.contrib.layers.fully_connected(inputs_temp,num_outputs=HIDDEN_UNITS)				# For use with generate_game()
 
 # Second fully-connected layer
 predictions = tf.contrib.layers.fully_connected(hidden,num_outputs=1,activation_fn=None)
-predictions_temp = tf.contrib.layers.fully_connected(hidden_temp,num_outputs=1,activation_fn=None)	# For use with generate_game()
 
 
 # ----------------------------------------------------
