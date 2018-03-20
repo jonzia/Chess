@@ -4,9 +4,9 @@
 Tensorflow program that learns to play chess via Reinforcement Learning.
 
 ## Description
-This program learns to play chess via reinforcement learning. The action-value functions are learned by training a neural network on the total return of randomly-initialized board states, determined by Monte Carlo simulations. The program follows an epsilon-greedy policy based on the most current action-value function approximations. As of v1.0.1, each training step is trained on batches of full-depth Monte Carlo simulations.
+This program learns to play chess via reinforcement learning. The action-value functions are learned by training a neural network on the total return of randomly-initialized board states, determined by Monte Carlo simulations. The program follows an epsilon-greedy policy based on the most current action-value function approximations. As of v1.0.1, each training step is trained on batches of full-depth Monte Carlo simulations. The model architecture has one hidden layer, though this can be easily expanded or even updated to a convolutional architecture (to be included in a future release).
 
-The game's basic rules are encoded in *pieces.py* and the board state parameters are defined in *state.py*. Once a proper action-value function is converged upon, it can be implemented with a greedy policy for purposes of gameplay.
+The game's basic rules are encoded in *pieces.py* and the board state parameters are defined in *state.py*. Once a proper action-value function is converged upon, it can be implemented with a greedy policy for purposes of gameplay. The program *test_bench.py* is included for validating trained model performance against a benchmark policy.
 
 *NOTE that this program is still in beta and is under active debugging and improvement.*
 
@@ -41,11 +41,11 @@ with tf.name_scope("Output_Data"):		# Output data filenames (.txt)
 	training_loss = os.path.join(dir_name, "training_loss.txt")
 ```
 4. Run *main.py*. **(2)**
-5. (Optional) Run [Tensorboard](https://www.tensorflow.org/programmers_guide/summaries_and_tensorboard) to visualize learning.
-6. Upon completion of training, training loss at each step is written to an output .txt file for analysis.
+5. (Optional) Run [Tensorboard](https://www.tensorflow.org/programmers_guide/summaries_and_tensorboard) to visualize learning. **(3)**
+6. (Optional) Run *test_bench.py* to compare model performance against a benchmark. At the current time, the benchmark is a random policy, however future releases will allow the user to load other benchmark models. **(4)**
 
 ## Update Log
-_v1.0.1_: Bug fixes and support for large training batches. Future updates will include a test bench program for validation.
+_v1.0.1_: Bug fixes and support for large training batches. Added test bench program for analysis.
 
 _v1.0.0_: Beta version.
 
@@ -53,3 +53,7 @@ _v1.0.0_: Beta version.
 **(1)** This program was built on Python 3.6 and Tensorflow 1.5.
 
 **(2)** The terminal display includes the current step, training loss, percent completion, and time remaining. The current model is saved at each time step.
+
+**(3)** Upon completion of training, training loss at each step is written to an output .txt file for analysis.
+
+**(4)** This program outputs training progress and mean outcome in the terminal (where outcomes are -1 for loss, 0 for draw, 1 for win). This information is saved to an output .txt file for subsequent statistical analysis.
