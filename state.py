@@ -4,9 +4,15 @@
 # Last Edited: Saturday, March 17 2018
 # Georgia Institute of Technology
 #---------------------------------------------
+import tensorflow as tf
 import numpy as np
 import pieces as p
 import random as r
+import state as s
+import time as t
+import copy as c
+import math
+import os
 
 def initialize_pieces(random=False, keep_prob=1.0):
 
@@ -192,29 +198,65 @@ def visualize_state(piece_list):
 	for piece in piece_list:
 		# Load active pawns
 		if piece.is_active and piece.color == 'white' and piece.name == 'Pawn':
-			visualization[piece.file-1, piece.rank-1] = 'P'
+			try:
+				visualization[piece.file-1, piece.rank-1] = 'P'
+			except:
+				continue
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Pawn':
-			visualization[piece.file-1, piece.rank-1] = 'p'
+			try:
+				visualization[piece.file-1, piece.rank-1] = 'p'
+			except:
+				continue
 		elif piece.is_active and piece.color == 'white' and piece.name == 'Rook':
-			visualization[piece.file-1, piece.rank-1] = 'R'
+			try:
+				visualization[piece.file-1, piece.rank-1] = 'R'
+			except:
+				continue
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Rook':
-			visualization[piece.file-1, piece.rank-1] = 'r'
+			try:
+				visualization[piece.file-1, piece.rank-1] = 'r'
+			except:
+				continue
 		elif piece.is_active and piece.color == 'white' and piece.name == 'Knight':
-			visualization[piece.file-1, piece.rank-1] = 'N'
+			try:
+				visualization[piece.file-1, piece.rank-1] = 'N'
+			except:
+				continue
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Knight':
-			visualization[piece.file-1, piece.rank-1] = 'n'
+			try:
+				visualization[piece.file-1, piece.rank-1] = 'n'
+			except:
+				continue
 		elif piece.is_active and piece.color == 'white' and piece.name == 'Bishop':
-			visualization[piece.file-1, piece.rank-1] = 'B'
+			try:
+				visualization[piece.file-1, piece.rank-1] = 'B'
+			except:
+				continue
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Bishop':
-			visualization[piece.file-1, piece.rank-1] = 'b'
+			try:
+				visualization[piece.file-1, piece.rank-1] = 'b'
+			except:
+				continue
 		elif piece.is_active and piece.color == 'white' and piece.name == 'Queen':
-			visualization[piece.file-1, piece.rank-1] = 'Q'
+			try:
+				visualization[piece.file-1, piece.rank-1] = 'Q'
+			except:
+				continue
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Queen':
-			visualization[piece.file-1, piece.rank-1] = 'q'
+			try:
+				visualization[piece.file-1, piece.rank-1] = 'q'
+			except:
+				continue
 		elif piece.is_active and piece.color == 'white' and piece.name == 'King':
-			visualization[piece.file-1, piece.rank-1] = 'K'
+			try:
+				visualization[piece.file-1, piece.rank-1] = 'K'
+			except:
+				continue
 		elif piece.is_active and piece.color == 'black' and piece.name == 'King':
-			visualization[piece.file-1, piece.rank-1] = 'k'
+			try:
+				visualization[piece.file-1, piece.rank-1] = 'k'
+			except:
+				continue
 
 	# Return visualization
 	return visualization

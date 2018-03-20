@@ -1,7 +1,7 @@
 # ----------------------------------------------------
 # Chess AI v1.0.1
 # Created By: Jonathan Zia
-# Last Edited: Saturday, March 17 2018
+# Last Edited: Tuesdayu, March 20 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -19,10 +19,10 @@ import os
 # User-Defined Constants
 # ----------------------------------------------------
 # Value Function Approximator Training
-NUM_TRAINING = 500		# Number of training steps
+NUM_TRAINING = 1000		# Number of training steps
 HIDDEN_UNITS = 100		# Number of hidden units
 LEARNING_RATE = 0.001	# Learning rate
-BATCH_SIZE = 5			# Batch size (pending)
+BATCH_SIZE = 5			# Batch size
 
 # Simulation Parameters
 MAX_MOVES = 100			# Maximum number of moves for Monte Carlo
@@ -37,7 +37,7 @@ LOAD_FILE = False 		# Load initial value model from saved checkpoint?
 # ----------------------------------------------------
 # Specify filenames
 # Root directory:
-dir_name = "Users/jonathanzia"
+dir_name = ""
 with tf.name_scope("Model_Data"):		# Model save/load paths
 	load_path = os.path.join(dir_name, "checkpoints/model")			# Load previous model
 	save_path = os.path.join(dir_name, "checkpoints/model")			# Save model at each step
@@ -99,11 +99,14 @@ def move_piece(piece,move_index,player,pieces,switch_player=False,print_move=Fal
 			player = 'white'
 		return player
 
-def generate_game(batch_size=BATCH_SIZE,max_moves=MAX_MOVES,epsilon=EPSILON):
+def generate_game(batch_size,max_moves,epsilon):
 	"""
 	Generating feature and target batches
 	Returns: (1) feature batch, (2) label batch
 	"""
+
+	# Generates training data based on batches of full-depth Monte-Carlo simulations
+	# performing epsilon-greedy policy evalutaion.
 
 	# Initialize placeholders for batches
 	feature_batches = []
@@ -129,7 +132,7 @@ def generate_game(batch_size=BATCH_SIZE,max_moves=MAX_MOVES,epsilon=EPSILON):
 		# ----------------------------------------------------
 		# Run Monte Carlo Simulation until terminal event(s):
 		# Terminal events: Kings.is_active == False or move_counter > MAX_MOVES
-		while pieces[4].is_active and pieces[28].is_active and move < MAX_MOVES:
+		while pieces[4].is_active and pieces[28].is_active and move < max_moves:
 
 			# Obtain board state
 			if move == 0:
@@ -186,7 +189,7 @@ def generate_game(batch_size=BATCH_SIZE,max_moves=MAX_MOVES,epsilon=EPSILON):
 			# Epsilon-Greedy Policy
 			# ----------------------------------------------------
 			# With probability epsilon, choose a random action
-			if r.random() > EPSILON:
+			if r.random() > epsilon:
 				while True:
 					# If the action is valid...
 					piece_index = r.randint(0,15)
@@ -257,7 +260,7 @@ t_loss = []	# Placeholder for training loss values
 with tf.Session() as sess:
 
 	# Create Tensorboard graph
-	writer = tf.summary.FileWriter(filewriter_path, sess.graph)
+	#writer = tf.summary.FileWriter(filewriter_path, sess.graph)
 	#merged = tf.summary.merge_all()
 
 	# If there is a model checkpoint saved, load the checkpoint. Else, initialize variables.
@@ -275,7 +278,7 @@ with tf.Session() as sess:
 	for step in range(0,NUM_TRAINING):
 
 		# Run game and generate feature and label batches
-		features, labels = generate_game()
+		features, labels = generate_game(batch_size=BATCH_SIZE,max_moves=MAX_MOVES,epsilon=EPSILON)
 
 
 		# ----------------------------------------------------
@@ -299,7 +302,7 @@ with tf.Session() as sess:
 		if step % 10 == 0:
 
 			# Report loss
-			print("\nTrain loss at step", step, ":", loss_)
+			print("\nAverage train loss at step", step, ":", np.mean(t_loss))
 
 			# Print predictions and targets
 			print("\nPredictions:")
@@ -323,4 +326,4 @@ with tf.Session() as sess:
 		np.savetxt(file_object, t_loss)
 
 	# Close the writer
-	writer.close()
+	#writer.close()

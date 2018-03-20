@@ -295,4 +295,4 @@ with tf.Session() as sess:
 		np.savetxt(file_object, outcomes)
 
 	# Close the writer
-	writer.close()
+	# writer.close()
