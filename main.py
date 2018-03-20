@@ -1,5 +1,5 @@
 # ----------------------------------------------------
-# Chess AI
+# Chess AI v1.0.1
 # Created By: Jonathan Zia
 # Last Edited: Saturday, March 17 2018
 # Georgia Institute of Technology
@@ -19,7 +19,7 @@ import os
 # User-Defined Constants
 # ----------------------------------------------------
 # Value Function Approximator Training
-NUM_TRAINING = 1000		# Number of training steps
+NUM_TRAINING = 500		# Number of training steps
 HIDDEN_UNITS = 100		# Number of hidden units
 LEARNING_RATE = 0.001	# Learning rate
 BATCH_SIZE = 5			# Batch size (pending)
@@ -51,14 +51,6 @@ with tf.name_scope("Output_Data"):		# Output data filenames (.txt)
 # ----------------------------------------------------
 # User-Defined Methods
 # ----------------------------------------------------
-def init_values(shape):
-	"""
-	Initialize Weight and Bias Matrices
-	Returns: Tensor of shape "shape" w/ normally-distributed values
-	"""
-	temp = tf.truncated_normal(shape, stddev=0.1)
-	return tf.Variable(temp)
-
 def initialize_board(random=False, keep_prob=1.0):
 	"""
 	Initialize Game Board
@@ -107,79 +99,18 @@ def move_piece(piece,move_index,player,pieces,switch_player=False,print_move=Fal
 			player = 'white'
 		return player
 
+def generate_game(batch_size=BATCH_SIZE,max_moves=MAX_MOVES,epsilon=EPSILON):
+	"""
+	Generating feature and target batches
+	Returns: (1) feature batch, (2) label batch
+	"""
 
-# ----------------------------------------------------
-# Importing Session Parameters
-# ----------------------------------------------------
-# Create placeholders for inputs and target values
-# Input dimensions: 8 x 8 x 12
-# Target dimensions: 1 x 1
-inputs = tf.placeholder(tf.float32,[8,8,12],name='Inputs')
-targets = tf.placeholder(tf.float32,shape=(),name='Targets')
+	# Initialize placeholders for batches
+	feature_batches = []
+	label_batches = []
 
-
-# ----------------------------------------------------
-# Initializing Feedforward NN
-# ----------------------------------------------------
-# First fully-connected layer
-with tf.name_scope("FCN_1"):
-	W_1 = init_values([768, HIDDEN_UNITS])
-	tf.summary.histogram('Weights_1',W_1)
-	b_1 = init_values([HIDDEN_UNITS])
-	tf.summary.histogram('Biases_1',b_1)
-
-# Second fully-connected layer
-with tf.name_scope("FCN_2"):
-	W_2 = init_values([HIDDEN_UNITS,1])
-	tf.summary.histogram('Weights_2',W_2)
-	b_2 = init_values([1,1])
-	tf.summary.histogram('Biases_2',b_2)
-
-# ----------------------------------------------------
-# Evaluating Feedforward NN
-# ----------------------------------------------------
-# Obtain hidden values by performing sigmoid((weights)*(output)+(biases))
-with tf.name_scope("Hidden_Layer"):
-	hidden = tf.sigmoid(tf.matmul(tf.transpose(tf.reshape(inputs,[-1,1])), W_1) + b_1)
-# Obtain predictions by performing (weights)*(output)+(biases)
-with tf.name_scope("Output_Layer"):
-	predictions = tf.matmul(hidden, W_2) + b_2
-
-# ----------------------------------------------------
-# Calculate Loss and Define Optimizer
-# ----------------------------------------------------
-# Calculating mean squared error of predictions and targets
-loss = tf.losses.mean_squared_error(labels=tf.reshape(targets,[1,1]), predictions=predictions)
-loss = tf.reduce_mean(loss)
-optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE).minimize(loss)
-
-
-# ----------------------------------------------------
-# Run Session
-# ----------------------------------------------------
-init = tf.global_variables_initializer()
-saver = tf.train.Saver()	# Instantiate Saver class
-t_loss = []	# Placeholder for training loss values
-with tf.Session() as sess:
-
-	# Create Tensorboard graph
-	writer = tf.summary.FileWriter(filewriter_path, sess.graph)
-	merged = tf.summary.merge_all()
-
-	# If there is a model checkpoint saved, load the checkpoint. Else, initialize variables.
-	if LOAD_FILE:
-		# Restore saved session
-		saver.restore(sess, load_path)
-	else:
-		# Initialize the variables
-		sess.run(init)
-
-	# Obtain start time
-	start_time = t.time()
-
-	# For each training step, generate a random board
-	for step in range(0,NUM_TRAINING):
-
+	# Loop through batch steps
+	for batch_step in range(0,batch_size):
 
 		# ----------------------------------------------------
 		# Initialize Board State
@@ -246,8 +177,7 @@ with tf.Session() as sess:
 						temp_board_state = s.board_state(temp_pieces)	# Obtain temporary state
 
 						# With temporary state, calculate expected return
-						expected_return = sess.run(predictions, feed_dict={inputs: temp_board_state})
-
+						expected_return = sess.run(predictions_temp, feed_dict={inputs_temp: np.reshape(temp_board_state,(1,768))})
 						# Write estimated return to return_array
 						return_array[i,j] = expected_return
 
@@ -277,13 +207,84 @@ with tf.Session() as sess:
 			# Increment move counter
 			move += 1
 
+		feature_batches.append(initial_state)
+		label_batches.append(all_returns[0])
+
+	# Return features and labels
+	feature_batches = np.array(feature_batches)
+	label_batches = np.array(label_batches)
+	return feature_batches, label_batches
+
+
+# ----------------------------------------------------
+# Importing Session Parameters
+# ----------------------------------------------------
+# Create placeholders for inputs and target values
+# Input dimensions: 8 x 8 x 12
+# Target dimensions: 1 x 1
+inputs = tf.placeholder(tf.float32,[BATCH_SIZE,768],name='Inputs')
+targets = tf.placeholder(tf.float32,shape=(BATCH_SIZE,1),name='Targets')
+inputs_temp = tf.placeholder(tf.float32,[1,768])	# For use with generate_game()
+
+
+# ----------------------------------------------------
+# Implementing Feedforward NN
+# ----------------------------------------------------
+# First fully-connected layer
+hidden = tf.contrib.layers.fully_connected(inputs,num_outputs=HIDDEN_UNITS)
+hidden_temp = tf.contrib.layers.fully_connected(inputs_temp,num_outputs=HIDDEN_UNITS)				# For use with generate_game()
+
+# Second fully-connected layer
+predictions = tf.contrib.layers.fully_connected(hidden,num_outputs=1,activation_fn=None)
+predictions_temp = tf.contrib.layers.fully_connected(hidden_temp,num_outputs=1,activation_fn=None)	# For use with generate_game()
+
+
+# ----------------------------------------------------
+# Calculate Loss and Define Optimizer
+# ----------------------------------------------------
+# Calculating mean squared error of predictions and targets
+loss = tf.losses.mean_squared_error(labels=targets, predictions=predictions)
+loss = tf.reduce_mean(loss)
+optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE).minimize(loss)
+
+
+# ----------------------------------------------------
+# Run Session
+# ----------------------------------------------------
+init = tf.global_variables_initializer()
+saver = tf.train.Saver()	# Instantiate Saver class
+t_loss = []	# Placeholder for training loss values
+with tf.Session() as sess:
+
+	# Create Tensorboard graph
+	writer = tf.summary.FileWriter(filewriter_path, sess.graph)
+	#merged = tf.summary.merge_all()
+
+	# If there is a model checkpoint saved, load the checkpoint. Else, initialize variables.
+	if LOAD_FILE:
+		# Restore saved session
+		saver.restore(sess, load_path)
+	else:
+		# Initialize the variables
+		sess.run(init)
+
+	# Obtain start time
+	start_time = t.time()
+
+	# For each training step, generate a random board
+	for step in range(0,NUM_TRAINING):
+
+		# Run game and generate feature and label batches
+		features, labels = generate_game()
+
+
 		# ----------------------------------------------------
 		# Optimize Model for Current Simulation
 		# ----------------------------------------------------			
 		# Print step
 		print("\nOptimizing at step", step)
 		# Run optimizer, loss, and predicted error ops in graph
-		predictions_, targets_, _, loss_ = sess.run([predictions, targets, optimizer, loss], feed_dict={inputs: np.array(all_states[0]), targets: np.array(all_returns[0])})
+		predictions_, targets_, _, loss_ = sess.run([predictions, targets, optimizer, loss],feed_dict={inputs: np.reshape(features,(BATCH_SIZE,768)), targets: np.expand_dims(labels,axis=1)})
 
 		# Record loss
 		t_loss.append(loss_)
@@ -291,8 +292,8 @@ with tf.Session() as sess:
 		# Save and overwrite the session at each training step
 		saver.save(sess, save_path)
 		# Writing summaries to Tensorboard at each training step
-		summ = sess.run(merged)
-		writer.add_summary(summ,step)
+		#summ = sess.run(merged)
+		#writer.add_summary(summ,step)
 
 		# Conditional statement for calculating time remaining, percent completion, and loss
 		if step % 10 == 0:
@@ -300,9 +301,15 @@ with tf.Session() as sess:
 			# Report loss
 			print("\nTrain loss at step", step, ":", loss_)
 
+			# Print predictions and targets
+			print("\nPredictions:")
+			print(predictions_)
+			print("\nTargets:")
+			print(targets_)
+
 			# Report percent completion
 			p_completion = 100*step/NUM_TRAINING
-			print("Percent completion: %.3f%%" % p_completion)
+			print("\nPercent completion: %.3f%%" % p_completion)
 
 			# Print time remaining
 			avg_elapsed_time = (t.time() - start_time)/(step+1)
