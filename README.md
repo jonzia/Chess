@@ -1,4 +1,4 @@
-# Chess RL v1.0.1
+# Chess RL v1.0.2
 
 ## Overview
 Tensorflow program that learns to play chess via Reinforcement Learning. Check out the [design blog](https://www.jonzia.me/projects/chess-reinforcement-learning)!
@@ -47,6 +47,9 @@ with tf.name_scope("Output_Data"):		# Output data filenames (.txt)
 4. Run *main.py*. **(2)**
 5. (Optional) Run [Tensorboard](https://www.tensorflow.org/programmers_guide/summaries_and_tensorboard) to visualize learning. **(3)**
 6. (Optional) Run *test_bench.py* to compare model performance against a benchmark. At the current time, the benchmark is a random policy, however future releases will allow the user to load other benchmark models. **(4)**
+
+The following is a sample output for data visualization in the terminal or command prompt:
+![Command Prompt](https://raw.githubusercontent.com/jonzia/Chess_RL/master/Media/Command_Prompt.PNG)
 
 ## Update Log
 _v1.0.2_: Included support for game visualization and move printing in chess or longhand notation.
