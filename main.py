@@ -26,7 +26,7 @@ BATCH_SIZE = 5			# Batch size
 
 # Simulation Parameters
 MAX_MOVES = 100			# Maximum number of moves for Monte Carlo
-EPSILON = 0.8			# Defining epsilon for e-greedy policy
+EPSILON = 0.2			# Defining epsilon for e-greedy policy
 
 # Load File
 LOAD_FILE = False 		# Load initial value model from saved checkpoint?
@@ -189,7 +189,7 @@ def generate_game(batch_size,max_moves,epsilon):
 			# Epsilon-Greedy Policy
 			# ----------------------------------------------------
 			# With probability epsilon, choose a random action
-			if r.random() > epsilon:
+			if r.random() < epsilon:
 				while True:
 					# If the action is valid...
 					piece_index = r.randint(0,15)
