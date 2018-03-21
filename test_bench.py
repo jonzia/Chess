@@ -1,7 +1,7 @@
 # ----------------------------------------------------
-# Test Bench for Chess AI v1.0.1
+# Test Bench for Chess AI v1.0.2
 # Created By: Jonathan Zia
-# Last Edited: Tuesdayu, March 20 2018
+# Last Edited: Tuesday, March 21 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -32,6 +32,9 @@ EPSILON = 0.0			# Defining epsilon for e-greedy policy (0 for testing -> greedy 
 
 # Load File
 LOAD_FILE = True 		# Load trained model from saved checkpoint (True for testing)
+VISUALIZE = True		# Select True to visualize games and False to suppress game output
+PRINT = True			# Select True to print moves as text and False to suppress printing
+ALGEBRAIC = True		# Specify long algebraic notation (True) or descriptive text (False)
 
 
 # ----------------------------------------------------
@@ -39,7 +42,7 @@ LOAD_FILE = True 		# Load trained model from saved checkpoint (True for testing)
 # ----------------------------------------------------
 # Specify filenames
 # Root directory:
-dir_name = ""
+dir_name = "D:\\"
 with tf.name_scope("Model_Data"):		# Model save/load paths
 	load_path = os.path.join(dir_name, "checkpoints/model")			# Model load path
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
@@ -83,15 +86,15 @@ def visualize_board(pieces, player, move):
 	print("\nCurrent Board at Move " + str(move) + " for Player " + player)
 	print(s.visualize_state(pieces))
 
-def move_piece(piece,move_index,player,pieces,switch_player=False,print_move=False):
+def move_piece(piece,move_index,player,pieces,switch_player=False,print_move=False,algebraic=True):
 	"""
 	Perform specified move
 	Returns: Void
 	"""
 	if player == 'white':
-		pieces[piece].move(move_index,pieces,print_move=print_move)
+		pieces[piece].move(move_index,pieces,print_move=print_move,algebraic=algebraic)
 	else:
-		pieces[piece+16].move(move_index,pieces,print_move=print_move)
+		pieces[piece+16].move(move_index,pieces,print_move=print_move,algebraic=algebraic)
 
 	if switch_player:
 		if player == 'white':
@@ -100,10 +103,10 @@ def move_piece(piece,move_index,player,pieces,switch_player=False,print_move=Fal
 			player = 'white'
 		return player
 
-def generate_outcome(batch_size,max_moves,epsilon):
+def generate_outcome(batch_size,max_moves,epsilon,visualize,print_move,algebraic):
 	"""
 	Generating feature and target batches
-	Returns: (1) feature batch, (2) label batch
+	Returns: (1) feature batch, (2) label batch, (3) visualize board?, (4) print move?, (5) print algebraic notation?
 	"""
 
 	# Generates training data based on batches of full-depth Monte-Carlo simulations
@@ -114,6 +117,10 @@ def generate_outcome(batch_size,max_moves,epsilon):
 
 	# Loop through batch steps
 	for batch_step in range(0,batch_size):
+
+		# Print beginning of game notification for visualization
+		if visualize or print_move:
+			print("\n----------BEGIN GAME----------")
 
 		# ----------------------------------------------------
 		# Initialize Board State
@@ -141,7 +148,8 @@ def generate_outcome(batch_size,max_moves,epsilon):
 				board_state = s.board_state(pieces)
 
 			# Visualize board state
-			# visualize_board(pieces,player,move)
+			if visualize:
+				visualize_board(pieces,player,move)
 
 			# Obtain current point differential
 			net_diff = s.points(pieces) - point_diff_0
@@ -197,7 +205,7 @@ def generate_outcome(batch_size,max_moves,epsilon):
 					move_index = r.randint(0,55)
 					if return_array[piece_index,move_index] != 0:
 						# Perform move and update player
-						player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=False)
+						player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=print_move,algebraic=algebraic)
 						break
 			# Else, act greedy w.r.t. expected return
 			else:
@@ -206,10 +214,14 @@ def generate_outcome(batch_size,max_moves,epsilon):
 				piece_index = move_choice[0][0]
 				move_index = move_choice[1][0]
 				# Perform move and update player
-				player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=False)
+				player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=print_move,algebraic=algebraic)
 
 			# Increment move counter
 			move += 1
+
+		# Print end of game notification for visualization
+		if visualize or print_move:
+			print("----------END OF GAME----------")
 
 		# Append outcome
 		# If player white won the game...
@@ -268,7 +280,7 @@ with tf.Session() as sess:
 	for step in range(0,NUM_TESTING):
 
 		# Run game and determine outcome
-		outcome = generate_outcome(batch_size=BATCH_SIZE,max_moves=MAX_MOVES,epsilon=EPSILON)
+		outcome = generate_outcome(batch_size=BATCH_SIZE,max_moves=MAX_MOVES,epsilon=EPSILON,visualize=VISUALIZE,print_move=PRINT,algebraic=ALGEBRAIC)
 		outcomes.append(outcome)
 
 

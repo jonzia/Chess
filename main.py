@@ -1,7 +1,7 @@
 # ----------------------------------------------------
-# Chess AI v1.0.1
+# Chess AI v1.0.2
 # Created By: Jonathan Zia
-# Last Edited: Tuesdayu, March 20 2018
+# Last Edited: Tuesday, March 21 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -27,6 +27,9 @@ BATCH_SIZE = 5			# Batch size
 # Simulation Parameters
 MAX_MOVES = 100			# Maximum number of moves for Monte Carlo
 EPSILON = 0.2			# Defining epsilon for e-greedy policy
+VISUALIZE = True		# Select True to visualize games and False to suppress game output
+PRINT = True			# Select True to print moves as text and False to suppress printing
+ALGEBRAIC = True		# Specify long algebraic notation (True) or descriptive text (False)
 
 # Load File
 LOAD_FILE = False 		# Load initial value model from saved checkpoint?
@@ -44,8 +47,8 @@ with tf.name_scope("Model_Data"):		# Model save/load paths
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
 	filewriter_path = os.path.join(dir_name, "output")
 with tf.name_scope("Output_Data"):		# Output data filenames (.txt)
-	# These .txt files will contain loss data for Matlab analysis
-	training_loss = os.path.join(dir_name, "training_loss.txt")
+	# These .txt files will contain data for Matlab analysis
+	training_loss = os.path.join(dir_name, "training_loss.txt")			# Training loss
 
 
 # ----------------------------------------------------
@@ -82,15 +85,15 @@ def visualize_board(pieces, player, move):
 	print("\nCurrent Board at Move " + str(move) + " for Player " + player)
 	print(s.visualize_state(pieces))
 
-def move_piece(piece,move_index,player,pieces,switch_player=False,print_move=False):
+def move_piece(piece,move_index,player,pieces,switch_player=False,print_move=False,algebraic=True):
 	"""
 	Perform specified move
 	Returns: Void
 	"""
 	if player == 'white':
-		pieces[piece].move(move_index,pieces,print_move=print_move)
+		pieces[piece].move(move_index,pieces,print_move=print_move,algebraic=algebraic)
 	else:
-		pieces[piece+16].move(move_index,pieces,print_move=print_move)
+		pieces[piece+16].move(move_index,pieces,print_move=print_move,algebraic=algebraic)
 
 	if switch_player:
 		if player == 'white':
@@ -99,7 +102,7 @@ def move_piece(piece,move_index,player,pieces,switch_player=False,print_move=Fal
 			player = 'white'
 		return player
 
-def generate_game(batch_size,max_moves,epsilon):
+def generate_game(batch_size,max_moves,epsilon,visualize,print_move,algebraic):
 	"""
 	Generating feature and target batches
 	Returns: (1) feature batch, (2) label batch
@@ -114,6 +117,10 @@ def generate_game(batch_size,max_moves,epsilon):
 
 	# Loop through batch steps
 	for batch_step in range(0,batch_size):
+
+		# Print beginning of game notification for visualization
+		if visualize or print_move:
+			print("\n----------BEGIN GAME----------")
 
 		# ----------------------------------------------------
 		# Initialize Board State
@@ -141,7 +148,8 @@ def generate_game(batch_size,max_moves,epsilon):
 				board_state = s.board_state(pieces)
 
 			# Visualize board state
-			# visualize_board(pieces,player,move)
+			if visualize:
+				visualize_board(pieces,player,move)
 
 			# Obtain current point differential
 			net_diff = s.points(pieces) - point_diff_0
@@ -196,7 +204,7 @@ def generate_game(batch_size,max_moves,epsilon):
 					move_index = r.randint(0,55)
 					if return_array[piece_index,move_index] != 0:
 						# Perform move and update player
-						player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=False)
+						player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=print_move,algebraic=algebraic)
 						break
 			# Else, act greedy w.r.t. expected return
 			else:
@@ -214,9 +222,13 @@ def generate_game(batch_size,max_moves,epsilon):
 					piece_index = mindim[0][0]	# Maximum (row)
 					move_index = mindim[0][1]	# Maximum (column)
 				# Perform move and update player
-				player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=False)
+				player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=print_move,algebraic=algebraic)
 			# Increment move counter
 			move += 1
+
+		# Print end of game notification for visualization
+		if visualize or print_move:
+			print("----------END OF GAME----------")
 
 		feature_batches.append(initial_state)
 		label_batches.append(all_returns[0])
@@ -283,7 +295,7 @@ with tf.Session() as sess:
 	for step in range(0,NUM_TRAINING):
 
 		# Run game and generate feature and label batches
-		features, labels = generate_game(batch_size=BATCH_SIZE,max_moves=MAX_MOVES,epsilon=EPSILON)
+		features, labels = generate_game(batch_size=BATCH_SIZE,max_moves=MAX_MOVES,epsilon=EPSILON,visualize=VISUALIZE,print_move=PRINT,algebraic=ALGEBRAIC)
 
 
 		# ----------------------------------------------------

@@ -1,7 +1,7 @@
 #---------------------------------------------
 # Representing Board State for Chess AI
 # Created By: Jonathan Zia
-# Last Edited: Saturday, March 17 2018
+# Last Edited: Monday, March 20 2018
 # Georgia Institute of Technology
 #---------------------------------------------
 import tensorflow as tf

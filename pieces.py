@@ -1,7 +1,7 @@
 #---------------------------------------------
 # Chess Piece Classes for Chess AI
 # Created By: Jonathan Zia
-# Last Edited: Saturday, March 17 2018
+# Last Edited: Tuesday, March 21 2018
 # Georgia Institute of Technology
 #---------------------------------------------
 import tensorflow as tf
@@ -28,6 +28,7 @@ class Pawn():
 
 		# Piece Attributes
 		self.name = 'Pawn'		# Name
+		self.symbol = ''		# Algebraic notation symbol
 		self.value = 1			# Value (1 for pawn)
 		self.color = color		# Color
 		self.is_active = True	# Active/Inactive
@@ -255,19 +256,25 @@ class Pawn():
 				return action_space
 
 
-	def move(self, action, piece_list, print_move=False):
+	def move(self, action, piece_list, print_move=False, algebraic=True):
 
 		"""Moving piece's position"""
 
-		# Requires:	action (element of action vector)
+		# Requires:	(1) action (element of action vector), (2) piece list, (3) print move? (4) algebraic notation?
 		# Returns:	void
+
+		# Initializing placeholder
+		promoted = False
+		# Temporarily save old position for the purposes of algebraic notation
+		old_rank = self.rank
+		old_file = self.file
 
 		# IF THE PIECE IS A PAWN (HAS NOT BEEN PROMOTED)
 		if self.name == "Pawn":
 
 			# Action vector:
 			# [1 forward, 2 forward, attack (+file), attack (-file), promotion, 51 zeros]
-			
+
 			# Move 1 forward
 			if action == 0:
 				if self.color == 'white':
@@ -298,7 +305,9 @@ class Pawn():
 					self.rank = self.rank-1
 			# Promote to queen
 			else:
+				promoted = True
 				self.name = 'Queen'
+				self.symbol = 'Q'
 				self.value = 9
 
 
@@ -351,11 +360,21 @@ class Pawn():
 				break
 
 		# Print movement if indicated
-		if print_move:
-			if piece_remove:
+		file_list = ['a','b','c','d','e','f','g','h']
+		if print_move and (algebraic == False):
+			if promoted:
+				print(self.name + "promoted to queen")
+			elif piece_remove:
 				print(self.name + " to " + str(self.file) + "," + str(self.rank) + " taking " + remove_name)
 			else:
 				print(self.name + " to " + str(self.file) + "," + str(self.rank))
+		elif print_move and algebraic:
+			if promoted:
+				print(file_list[self.file-1] + str(self.rank) + "=" + self.symbol)
+			elif piece_remove:
+				print(self.symbol + file_list[old_file-1] + str(old_rank)+ " x " + file_list[self.file-1] + str(self.rank))
+			else:
+				print(self.symbol + file_list[old_file-1] + str(old_rank) + "-" + file_list[self.file-1] + str(self.rank))
 
 
 	def remove(self):
@@ -379,6 +398,7 @@ class Rook():
 
 		# Piece Attributes
 		self.name = 'Rook'		# Name
+		self.symbol = 'R'		# Sybmol for algebraic notation
 		self.value = 5			# Value (5 for rook)
 		self.color = color		# Color
 		self.is_active = True	# Active/Inactive
@@ -457,15 +477,19 @@ class Rook():
 			return action_space
 
 
-	def move(self, action, piece_list, print_move=False):
+	def move(self, action, piece_list, print_move=False, algebraic=True):
 
 		"""Moving piece's position"""
 
-		# Requires:	action (element of action vector)
+		# Requires:	(1) action (element of action vector), (2) piece list, (3) print move? (4) algebraic notation?
 		# Returns:	void
 
 		# Action vector:
 		# [1-7 +file, 1-7 -file, 1-7 +rank, 1-7 -rank, 28 zeros]
+
+		# Temporarily save old position for the purposes of algebraic notation
+		old_rank = self.rank
+		old_file = self.file
 
 		# +file movements
 		if 0 <= action < 7:
@@ -494,7 +518,13 @@ class Rook():
 				break
 
 		# Print movement if indicated
-		if print_move:
+		file_list = ['a','b','c','d','e','f','g','h']
+		if print_move and algebraic:
+			if piece_remove:
+				print(self.symbol + file_list[old_file-1] + str(old_rank)+ " x " + file_list[self.file-1] + str(self.rank))
+			else:
+				print(self.symbol + file_list[old_file-1] + str(old_rank) + "-" + file_list[self.file-1] + str(self.rank))
+		elif print_move:
 			if piece_remove:
 				print(self.name + " to " + str(self.file) + "," + str(self.rank) + " taking " + remove_name)
 			else:
@@ -523,6 +553,7 @@ class Knight():
 
 		# Piece Attributes
 		self.name = 'Knight'	# Name
+		self.symbol = 'N'		# Symbol for algebraic notation
 		self.value = 3			# Value (3 for knight)
 		self.color = color		# Color
 		self.is_active = True	# Active/Inactive
@@ -598,12 +629,16 @@ class Knight():
 			return action_space
 
 
-	def move(self, action, piece_list, print_move=False):
+	def move(self, action, piece_list, print_move=False, algebraic=True):
 
 		"""Moving piece's position"""
 
-		# Requires:	action (element of action vector)
+		# Requires:	(1) action (element of action vector), (2) piece list, (3) print move? (4) algebraic notation?
 		# Returns:	void
+
+		# Temporarily save old position for the purposes of algebraic notation
+		old_rank = self.rank
+		old_file = self.file
 
 		# Action vector:
 		# [[2,1],[2,-1],[1,2],[-1,2],[1,-2],[-1,-2],[-2,1],[-2,-1]]
@@ -646,7 +681,13 @@ class Knight():
 				break
 
 		# Print movement if indicated
-		if print_move:
+		file_list = ['a','b','c','d','e','f','g','h']
+		if print_move and algebraic:
+			if piece_remove:
+				print(self.symbol + file_list[old_file-1] + str(old_rank)+ " x " + file_list[self.file-1] + str(self.rank))
+			else:
+				print(self.symbol + file_list[old_file-1] + str(old_rank) + "-" + file_list[self.file-1] + str(self.rank))
+		elif print_move:
 			if piece_remove:
 				print(self.name + " to " + str(self.file) + "," + str(self.rank) + " taking " + remove_name)
 			else:
@@ -675,6 +716,7 @@ class Bishop():
 
 		# Piece Attributes
 		self.name = 'Bishop'	# Name
+		self.symbol = 'B'		# Symbol for algebraic notation
 		self.value = 3			# Value (3 for bishop)
 		self.color = color		# Color
 		self.is_active = True	# Active/Inactive
@@ -752,15 +794,19 @@ class Bishop():
 			return action_space
 
 
-	def move(self, action, piece_list, print_move=False):
+	def move(self, action, piece_list, print_move=False, algebraic=True):
 
 		"""Moving piece's position"""
 
-		# Requires:	action (element of action vector)
+		# Requires:	(1) action (element of action vector), (2) piece list, (3) print move? (4) algebraic notation?
 		# Returns:	void
 
 		# Action vector:
 		# [1-7 +f/+r, 1-7 +f/-r, 1-7 -f/+r, 1-7 -f/-r, 28 zeros]
+
+		# Temporarily save old position for the purposes of algebraic notation
+		old_rank = self.rank
+		old_file = self.file
 
 		# +f/+r movements
 		if 0 <= action < 7:
@@ -792,7 +838,13 @@ class Bishop():
 				break
 
 		# Print movement if indicated
-		if print_move:
+		file_list = ['a','b','c','d','e','f','g','h']
+		if print_move and algebraic:
+			if piece_remove:
+				print(self.symbol + file_list[old_file-1] + str(old_rank)+ " x " + file_list[self.file-1] + str(self.rank))
+			else:
+				print(self.symbol + file_list[old_file-1] + str(old_rank) + "-" + file_list[self.file-1] + str(self.rank))
+		elif print_move:
 			if piece_remove:
 				print(self.name + " to " + str(self.file) + "," + str(self.rank) + " taking " + remove_name)
 			else:
@@ -821,6 +873,7 @@ class Queen():
 
 		# Piece Attributes
 		self.name = 'Queen'		# Name
+		self.symbol = 'Q'		# Symbol for algebraic notation
 		self.value = 9			# Value (9 for queen)
 		self.color = color		# Color
 		self.is_active = True	# Active/Inactive
@@ -932,15 +985,19 @@ class Queen():
 			return action_space
 
 
-	def move(self, action, piece_list, print_move=False):
+	def move(self, action, piece_list, print_move=False, algebraic=True):
 
 		"""Moving piece's position"""
 
-		# Requires:	action (element of action vector)
+		# Requires:	(1) action (element of action vector), (2) piece list, (3) print move? (4) algebraic notation?
 		# Returns:	void
 
 		# Action vector:
 		# [1-7 +f, 1-7 -f, 1-7 +r, 1-7 -r, 1-7 +f/+r, 1-7 +f/-r, 1-7 -f/+r, 1-7 -f/-r]
+
+		# Temporarily save old position for the purposes of algebraic notation
+		old_rank = self.rank
+		old_file = self.file
 
 		# +file movements
 		if 0 <= action < 7:
@@ -985,7 +1042,13 @@ class Queen():
 				break
 
 		# Print movement if indicated
-		if print_move:
+		file_list = ['a','b','c','d','e','f','g','h']
+		if print_move and algebraic:
+			if piece_remove:
+				print(self.symbol + file_list[old_file-1] + str(old_rank)+ " x " + file_list[self.file-1] + str(self.rank))
+			else:
+				print(self.symbol + file_list[old_file-1] + str(old_rank) + "-" + file_list[self.file-1] + str(self.rank))
+		elif print_move:
 			if piece_remove:
 				print(self.name + " to " + str(self.file) + "," + str(self.rank) + " taking " + remove_name)
 			else:
@@ -1014,6 +1077,7 @@ class King():
 
 		# Piece Attributes
 		self.name = 'King'		# Name
+		self.symbol = 'K'		# Symbol for algebraic notation
 		self.value = 100		# Value
 		self.color = color		# Color
 		self.is_active = True	# Active/Inactive
@@ -1187,12 +1251,19 @@ class King():
 			return action_space
 
 
-	def move(self, action, piece_list, print_move=False):
+	def move(self, action, piece_list, print_move=False, algebraic=True):
 
 		"""Moving piece's position"""
 
-		# Requires:	action (element of action vector)
+		# Requires:	(1) action (element of action vector), (2) piece list, (3) print move? (4) algebraic notation?
 		# Returns:	void
+
+		# Temporarily save old position for the purposes of algebraic notation
+		old_rank = self.rank
+		old_file = self.file
+		# Initializing placeholders
+		kcastle = False
+		qcastle = False
 
 		# Action vector:
 		# [8 king moves, kingside castle, queenside castle, 46 zeros]
@@ -1220,6 +1291,7 @@ class King():
 			self.rank = self.rank - 1
 		# Kingside castle
 		elif action == 8:
+			kcastle = True
 			self.file = self.file + 2
 			if self.color == 'white':
 				piece_list[7].file = piece_list[7].file - 2
@@ -1227,6 +1299,7 @@ class King():
 				piece_list[31].file = piece_list[31].file - 2
 		# Queenside castle
 		else:
+			qcastle = True
 			self.file = self.file - 2
 			if self.color == 'white':
 				piece_list[0].file = piece_list[0].file + 3
@@ -1246,8 +1319,22 @@ class King():
 				break
 
 		# Print movement if indicated
-		if print_move:
-			if piece_remove:
+		file_list = ['a','b','c','d','e','f','g','h']
+		if print_move and algebraic:
+			if kcastle:
+				print("0-0")
+			elif qcastle:
+				print("0-0-0")
+			elif piece_remove:
+				print(self.symbol + file_list[old_file-1] + str(old_rank)+ " x " + file_list[self.file-1] + str(self.rank))
+			else:
+				print(self.symbol + file_list[old_file-1] + str(old_rank) + "-" + file_list[self.file-1] + str(self.rank))
+		elif print_move:
+			if kcastle:
+				print("Kingside Castle")
+			elif qcastle:
+				print("Queenside Castle")
+			elif piece_remove:
 				print(self.name + " to " + str(self.file) + "," + str(self.rank) + " taking " + remove_name)
 			else:
 				print(self.name + " to " + str(self.file) + "," + str(self.rank))
