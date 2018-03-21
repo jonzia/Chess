@@ -4,7 +4,15 @@
 # Last Edited: Saturday, March 17 2018
 # Georgia Institute of Technology
 #---------------------------------------------
+import tensorflow as tf
 import numpy as np
+import pieces as p
+import random as r
+import state as s
+import time as t
+import copy as c
+import math
+import os
 
 
 #---------------------------------------------
@@ -460,11 +468,8 @@ class Rook():
 		# [1-7 +file, 1-7 -file, 1-7 +rank, 1-7 -rank, 28 zeros]
 
 		# +file movements
-		if 0 <= action < 7: # Correcting for a bug
-			if self.file + (action+1) > 8:
-				self.file = self.file
-			else:
-				self.file = self.file + (action+1)
+		if 0 <= action < 7:
+			self.file = self.file + (action+1)
 		# -file movements
 		elif 7 <= action < 14:
 			self.file = self.file - (action-6)

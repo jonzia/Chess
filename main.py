@@ -19,14 +19,14 @@ import os
 # User-Defined Constants
 # ----------------------------------------------------
 # Value Function Approximator Training
-NUM_TRAINING = 1000		# Number of training steps
+NUM_TRAINING = 100		# Number of training steps
 HIDDEN_UNITS = 100		# Number of hidden units
 LEARNING_RATE = 0.001	# Learning rate
 BATCH_SIZE = 5			# Batch size
 
 # Simulation Parameters
 MAX_MOVES = 100			# Maximum number of moves for Monte Carlo
-EPSILON = 0.2			# Defining epsilon for e-greedy policy
+EPSILON = 0.8			# Defining epsilon for e-greedy policy
 
 # Load File
 LOAD_FILE = False 		# Load initial value model from saved checkpoint?
@@ -37,10 +37,10 @@ LOAD_FILE = False 		# Load initial value model from saved checkpoint?
 # ----------------------------------------------------
 # Specify filenames
 # Root directory:
-dir_name = ""
+dir_name = "D:\\"
 with tf.name_scope("Model_Data"):		# Model save/load paths
-	load_path = os.path.join(dir_name, "checkpoints/model")			# Load previous model
-	save_path = os.path.join(dir_name, "checkpoints/model")			# Save model at each step
+	load_path = os.path.join(dir_name, "checkpoints\\model")			# Load previous model
+	save_path = os.path.join(dir_name, "checkpoints\\model")			# Save model at each step
 with tf.name_scope("Filewriter_Data"):	# Filewriter save path
 	filewriter_path = os.path.join(dir_name, "output")
 with tf.name_scope("Output_Data"):		# Output data filenames (.txt)
@@ -141,7 +141,7 @@ def generate_game(batch_size,max_moves,epsilon):
 				board_state = s.board_state(pieces)
 
 			# Visualize board state
-			# visualize_board(pieces,player,move)
+			visualize_board(pieces,player,move)
 
 			# Obtain current point differential
 			net_diff = s.points(pieces) - point_diff_0
@@ -196,20 +196,25 @@ def generate_game(batch_size,max_moves,epsilon):
 					move_index = r.randint(0,55)
 					if return_array[piece_index,move_index] != 0:
 						# Perform move and update player
-						player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=False)
+						player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=True)
 						break
 			# Else, act greedy w.r.t. expected return
 			else:
 				# Identify indices of maximum return (white) or minimum return (black)
 				if player == 'white':
-					move_choice = np.nonzero(return_array.max() == return_array)
+					# Find the indices of the maximum nonzero value
+					maxval = np.max(return_array[np.nonzero(return_array)])
+					maxdim = np.argwhere(return_array==maxval)
+					piece_index = maxdim[0][0]	# Maximum (row)
+					move_index = maxdim[0][1]	# Maximum (column)
 				else:
-					move_choice = np.nonzero(return_array.min() == return_array)
-				piece_index = move_choice[0][0]
-				move_index = move_choice[1][0]
+					# Find the indices of the minimum nonzero value
+					minval = np.min(return_array[np.nonzero(return_array)])
+					mindim = np.argwhere(return_array==minval)
+					piece_index = mindim[0][0]	# Maximum (row)
+					move_index = mindim[0][1]	# Maximum (column)
 				# Perform move and update player
-				player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=False)
-
+				player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=True)
 			# Increment move counter
 			move += 1
 
@@ -260,7 +265,7 @@ t_loss = []	# Placeholder for training loss values
 with tf.Session() as sess:
 
 	# Create Tensorboard graph
-	#writer = tf.summary.FileWriter(filewriter_path, sess.graph)
+	writer = tf.summary.FileWriter(filewriter_path, sess.graph)
 	#merged = tf.summary.merge_all()
 
 	# If there is a model checkpoint saved, load the checkpoint. Else, initialize variables.
@@ -326,4 +331,4 @@ with tf.Session() as sess:
 		np.savetxt(file_object, t_loss)
 
 	# Close the writer
-	#writer.close()
+	writer.close()

@@ -96,87 +96,51 @@ def board_state(piece_list):
 	for piece in piece_list:
 		# Place active white pawns in plane 0 and continue to next piece
 		if piece.is_active and piece.color == 'white' and piece.name == 'Pawn':
-			try:
 				board[piece.file-1, piece.rank-1, 0] = 1
-			except:
-				continue
-			continue
+
 		# Place active white knights in plane 1 and continue to next piece
 		elif piece.is_active and piece.color == 'white' and piece.name == 'Knight':
-			try:
 				board[piece.file-1, piece.rank-1, 1] = 1
-			except:
-				continue
-			continue
+
 		# Place active white bishops in plane 2 and continue to next piece
 		elif piece.is_active and piece.color == 'white' and piece.name == 'Bishop':
-			try:
 				board[piece.file-1, piece.rank-1, 2] = 1
-			except:
-				continue
-			continue
+
 		# Place active white rooks in plane 3 and continue to next piece
 		elif piece.is_active and piece.color == 'white' and piece.name == 'Rook':
-			try:
 				board[piece.file-1, piece.rank-1, 3] = 1
-			except:
-				continue
-			continue
+
 		# Place active white queen(s) in plane 4 and continue to next piece
 		elif piece.is_active and piece.color == 'white' and piece.name == 'Queen':
-			try:
 				board[piece.file-1, piece.rank-1, 4] = 1
-			except:
-				continue
-			continue
+
 		# Place active white king in plane 5 and continue to next piece
 		elif piece.is_active and piece.color == 'white' and piece.name == 'King':
-			try:
 				board[piece.file-1, piece.rank-1, 5] = 1
-			except:
-				continue
-			continue
+
 		# Place active black pawns in plane 6 and continue to next piece
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Pawn':
-			try:
 				board[piece.file-1, piece.rank-1, 6] = 1
-			except:
-				continue
-			continue
+
 		# Place active black knights in plane 7 and continue to next piece
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Knight':
-			try:
 				board[piece.file-1, piece.rank-1, 7] = 1
-			except:
-				continue
-			continue
+
 		# Place active black bishops in plane 8 and continue to next piece
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Bishop':
-			try:
 				board[piece.file-1, piece.rank-1, 8] = 1
-			except:
-				continue
-			continue
+
 		# Place active black rooks in plane 9 and continue to next piece
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Rook':
-			try:
 				board[piece.file-1, piece.rank-1, 9] = 1
-			except:
-				continue
-			continue
+
 		# Place active black queen(s) in plane 10 and continue to next piece
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Queen':
-			try:
 				board[piece.file-1, piece.rank-1, 10] = 1
-			except:
-				continue
-			continue
+
 		# Place active black king in plane 11 and continue to next piece
 		elif piece.is_active and piece.color == 'black' and piece.name == 'King':
-			try:
 				board[piece.file-1, piece.rank-1, 11] = 1
-			except:
-				continue
 
 	# Return board state
 	return board
@@ -198,65 +162,41 @@ def visualize_state(piece_list):
 	for piece in piece_list:
 		# Load active pawns
 		if piece.is_active and piece.color == 'white' and piece.name == 'Pawn':
-			try:
 				visualization[piece.file-1, piece.rank-1] = 'P'
-			except:
-				continue
+
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Pawn':
-			try:
 				visualization[piece.file-1, piece.rank-1] = 'p'
-			except:
-				continue
+
 		elif piece.is_active and piece.color == 'white' and piece.name == 'Rook':
-			try:
 				visualization[piece.file-1, piece.rank-1] = 'R'
-			except:
-				continue
+
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Rook':
-			try:
 				visualization[piece.file-1, piece.rank-1] = 'r'
-			except:
-				continue
+
 		elif piece.is_active and piece.color == 'white' and piece.name == 'Knight':
-			try:
 				visualization[piece.file-1, piece.rank-1] = 'N'
-			except:
-				continue
+
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Knight':
-			try:
 				visualization[piece.file-1, piece.rank-1] = 'n'
-			except:
-				continue
+
 		elif piece.is_active and piece.color == 'white' and piece.name == 'Bishop':
-			try:
 				visualization[piece.file-1, piece.rank-1] = 'B'
-			except:
-				continue
+
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Bishop':
-			try:
 				visualization[piece.file-1, piece.rank-1] = 'b'
-			except:
-				continue
+
 		elif piece.is_active and piece.color == 'white' and piece.name == 'Queen':
-			try:
 				visualization[piece.file-1, piece.rank-1] = 'Q'
-			except:
-				continue
+
 		elif piece.is_active and piece.color == 'black' and piece.name == 'Queen':
-			try:
 				visualization[piece.file-1, piece.rank-1] = 'q'
-			except:
-				continue
+
 		elif piece.is_active and piece.color == 'white' and piece.name == 'King':
-			try:
 				visualization[piece.file-1, piece.rank-1] = 'K'
-			except:
-				continue
+
 		elif piece.is_active and piece.color == 'black' and piece.name == 'King':
-			try:
 				visualization[piece.file-1, piece.rank-1] = 'k'
-			except:
-				continue
+
 
 	# Return visualization
 	return visualization
