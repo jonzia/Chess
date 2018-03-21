@@ -141,7 +141,7 @@ def generate_game(batch_size,max_moves,epsilon):
 				board_state = s.board_state(pieces)
 
 			# Visualize board state
-			visualize_board(pieces,player,move)
+			# visualize_board(pieces,player,move)
 
 			# Obtain current point differential
 			net_diff = s.points(pieces) - point_diff_0
@@ -196,7 +196,7 @@ def generate_game(batch_size,max_moves,epsilon):
 					move_index = r.randint(0,55)
 					if return_array[piece_index,move_index] != 0:
 						# Perform move and update player
-						player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=True)
+						player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=False)
 						break
 			# Else, act greedy w.r.t. expected return
 			else:
@@ -214,7 +214,7 @@ def generate_game(batch_size,max_moves,epsilon):
 					piece_index = mindim[0][0]	# Maximum (row)
 					move_index = mindim[0][1]	# Maximum (column)
 				# Perform move and update player
-				player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=True)
+				player = move_piece(piece_index,move_index,player,pieces,switch_player=True,print_move=False)
 			# Increment move counter
 			move += 1
 
