@@ -1,5 +1,5 @@
 # ----------------------------------------------------
-# Chess AI v1.0.2
+# Chess AI v1.0.3
 # Created By: Jonathan Zia
 # Last Edited: Tuesday, March 21 2018
 # Georgia Institute of Technology
@@ -11,45 +11,9 @@ import random as r
 import state as s
 import time as t
 import copy as c
+import argparse
 import math
 import os
-
-
-# ----------------------------------------------------
-# User-Defined Constants
-# ----------------------------------------------------
-# Value Function Approximator Training
-NUM_TRAINING = 100		# Number of training steps
-HIDDEN_UNITS = 100		# Number of hidden units
-LEARNING_RATE = 0.001	# Learning rate
-BATCH_SIZE = 5			# Batch size
-
-# Simulation Parameters
-MAX_MOVES = 100			# Maximum number of moves for Monte Carlo
-EPSILON = 0.2			# Defining epsilon for e-greedy policy
-VISUALIZE = True		# Select True to visualize games and False to suppress game output
-PRINT = True			# Select True to print moves as text and False to suppress printing
-ALGEBRAIC = True		# Specify long algebraic notation (True) or descriptive text (False)
-
-# Load File
-LOAD_FILE = False 		# Load initial value model from saved checkpoint?
-
-
-# ----------------------------------------------------
-# Data Paths
-# ----------------------------------------------------
-# Specify filenames
-# Root directory:
-dir_name = "D:\\"
-with tf.name_scope("Model_Data"):		# Model save/load paths
-	load_path = os.path.join(dir_name, "checkpoints\\model")			# Load previous model
-	save_path = os.path.join(dir_name, "checkpoints\\model")			# Save model at each step
-with tf.name_scope("Filewriter_Data"):	# Filewriter save path
-	filewriter_path = os.path.join(dir_name, "output")
-with tf.name_scope("Output_Data"):		# Output data filenames (.txt)
-	# These .txt files will contain data for Matlab analysis
-	training_loss = os.path.join(dir_name, "training_loss.txt")			# Training loss
-
 
 # ----------------------------------------------------
 # User-Defined Methods
@@ -239,108 +203,188 @@ def generate_game(batch_size,max_moves,epsilon,visualize,print_move,algebraic):
 	return feature_batches, label_batches
 
 
-# ----------------------------------------------------
-# Importing Session Parameters
-# ----------------------------------------------------
-# Create placeholders for inputs and target values
-# Input dimensions: 8 x 8 x 12
-# Target dimensions: 1 x 1
-inputs = tf.placeholder(tf.float32,[None,768],name='Inputs')
-targets = tf.placeholder(tf.float32,shape=(None,1),name='Targets')
+if __name__ == "__main__":
+
+	# ----------------------------------------------------
+	# Parsing Console Arguments
+	# ----------------------------------------------------
+	
+	# Create parser object
+	parser = argparse.ArgumentParser()
+
+	parser.add_argument("-t","--trainsteps", help="Number of training steps (Default 1000)", type=int)
+	parser.add_argument("-u","--hidunits", help="Number of hidden units (Default 100)", type=int)
+	parser.add_argument("-r","--learnrate", help="Learning rate (Default 0.001)", type=float)
+	parser.add_argument("-b","--batchsize", help="Batch size (Default 32)", type=int)
+	parser.add_argument("-m","--maxmoves", help="Maximum moves for MC simulations (Default 100)", type=int)
+	parser.add_argument("-e","--epsilon", help="Epsilon-greedy policy evaluation (Default 0.2)", type=float)
+	parser.add_argument("-v","--visualize", help="Visualize game board? (Default False)", type=bool)
+	parser.add_argument("-p","--print", help="Print moves? (Default False)", type=bool)
+	parser.add_argument("-a","--algebraic", help="Print moves in algebraic notation? (Default False)", type=bool)
+	parser.add_argument("-l","--loadfile", help="Load  model from saved checkpoint? (Default False)", type=bool)
+	parser.add_argument("-rd","--rootdir", help="Root directory for project", type=str)
+	parser.add_argument("-sd","--savedir", help="Save directory for project", type=str)
+	parser.add_argument("-ld","--loaddir", help="Load directory for project", type=str)
+
+	# Parse Arguments
+	args = parser.parse_args()
+
+	# Value Function Approximator Training
+	num_training = args.trainsteps if args.trainsteps else 1000
+	hidden_units = args.hidunits if args.hidunits else 100
+	learning_rate = args.learnrate if args.learnrate else 0.001
+	batch_size = args.batchsize if args.batchsize else 32
+
+	# Simulation Parameters
+	max_moves = args.maxmoves if args.maxmoves else 100
+	epsilon = args.epsilon if args.epsilon else 0.2
+	visualize = args.visualize if args.visualize else False
+	print_moves = args.print if args.print else False
+	algebraic = args.algebraic if args.algebraic else False
+
+	# Load File
+	load_file = args.loadfile if args.loadfile else False
+
+	# File Paths
+	dir_name = args.rootdir if args.rootdir else "/Users/jonathanzia"	# Root directory
+	load_path = args.loaddir if args.loaddir else "checkpoints/model"	# Load previous model
+	save_path = args.savedir if args.savedir else "checkpoints/model"	# Save model at each step
+
+	filewriter_path = os.path.join(dir_name, "output")					# Filewriter save path
+	training_loss = os.path.join(dir_name, "training_loss.txt")			# Training loss
+
+	# ----------------------------------------------------
+	# Train Model
+	# ----------------------------------------------------
+	
+	"""
+	Train value function model
+
+	Arguments:
+	- num_training:		[int]	Number of training steps
+	- hidden_units:		[int]	Number of hidden units per layer
+	- learning_rate:	[float]	Initial learning rate
+	- batch_size:		[int]	Batch size for stochastic gradient descent
+	- max_moves:		[int]	Maximum moves for Monte Carlo simulations
+	- epsilon:			[float]	Epsilon-greedy policy parameter
+	- visualize:		[bool]	Visualize game board during training?
+	- print_moves:		[bool]	Print moves during training?
+	- algebraic:		[bool]	Print moves using algebraic notation or long-form?
+	- load_file:		[bool] 	Load pre-trained model?
+	- dir_name:			[str]	Root directory filepath
+	- load_path:		[str]	Path to pre-trained model from root directory
+	- save_path:		[str]	Save path from root directory
+	- filewriter_path:	[str]	Save path for filewriter (TensorBoard)
+	- training_loss		[str]	Output .txt file name / path for training loss
+	"""
+
+	# ----------------------------------------------------
+	# Importing Session Parameters
+	# ----------------------------------------------------
+	# Create placeholders for inputs and target values
+	# Input dimensions: 8 x 8 x 12
+	# Target dimensions: 1 x 1
+	inputs = tf.placeholder(tf.float32,[None,768],name='Inputs')
+	targets = tf.placeholder(tf.float32,shape=(None,1),name='Targets')
 
 
-# ----------------------------------------------------
-# Implementing Feedforward NN
-# ----------------------------------------------------
-# First fully-connected layer
-hidden = tf.contrib.layers.fully_connected(inputs,num_outputs=HIDDEN_UNITS)
+	# ----------------------------------------------------
+	# Implementing Feedforward NN
+	# ----------------------------------------------------
+	# First fully-connected layer
+	hidden1 = tf.contrib.layers.fully_connected(inputs,num_outputs=hidden_units)
 
-# Second fully-connected layer
-predictions = tf.contrib.layers.fully_connected(hidden,num_outputs=1,activation_fn=None)
+	# Second fully-connected layer
+	hidden2 = tf.contrib.layers.fully_connected(hidden1,num_outputs=hidden_units)
 
-
-# ----------------------------------------------------
-# Calculate Loss and Define Optimizer
-# ----------------------------------------------------
-# Calculating mean squared error of predictions and targets
-loss = tf.losses.mean_squared_error(labels=targets, predictions=predictions)
-loss = tf.reduce_mean(loss)
-optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE).minimize(loss)
+	# Output layer
+	predictions = tf.contrib.layers.fully_connected(hidden2,num_outputs=1,activation_fn=None)
 
 
-# ----------------------------------------------------
-# Run Session
-# ----------------------------------------------------
-init = tf.global_variables_initializer()
-saver = tf.train.Saver()	# Instantiate Saver class
-t_loss = []	# Placeholder for training loss values
-with tf.Session() as sess:
-
-	# Create Tensorboard graph
-	writer = tf.summary.FileWriter(filewriter_path, sess.graph)
-	#merged = tf.summary.merge_all()
-
-	# If there is a model checkpoint saved, load the checkpoint. Else, initialize variables.
-	if LOAD_FILE:
-		# Restore saved session
-		saver.restore(sess, load_path)
-	else:
-		# Initialize the variables
-		sess.run(init)
-
-	# Obtain start time
-	start_time = t.time()
-
-	# For each training step, generate a random board
-	for step in range(0,NUM_TRAINING):
-
-		# Run game and generate feature and label batches
-		features, labels = generate_game(batch_size=BATCH_SIZE,max_moves=MAX_MOVES,epsilon=EPSILON,visualize=VISUALIZE,print_move=PRINT,algebraic=ALGEBRAIC)
+	# ----------------------------------------------------
+	# Calculate Loss and Define Optimizer
+	# ----------------------------------------------------
+	# Calculating mean squared error of predictions and targets
+	loss = tf.losses.mean_squared_error(labels=targets, predictions=predictions)
+	loss = tf.reduce_mean(loss)
+	optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 
 
-		# ----------------------------------------------------
-		# Optimize Model for Current Simulation
-		# ----------------------------------------------------			
-		# Print step
-		print("\nOptimizing at step", step)
-		# Run optimizer, loss, and predicted error ops in graph
-		predictions_, targets_, _, loss_ = sess.run([predictions, targets, optimizer, loss],feed_dict={inputs: np.reshape(features,(BATCH_SIZE,768)), targets: np.expand_dims(labels,axis=1)})
+	# ----------------------------------------------------
+	# Run Session
+	# ----------------------------------------------------
+	init = tf.global_variables_initializer()
+	saver = tf.train.Saver()	# Instantiate Saver class
+	t_loss = []	# Placeholder for training loss values
+	with tf.Session() as sess:
 
-		# Record loss
-		t_loss.append(loss_)
+		# Create Tensorboard graph
+		writer = tf.summary.FileWriter(filewriter_path, sess.graph)
+		#merged = tf.summary.merge_all()
 
-		# Save and overwrite the session at each training step
-		saver.save(sess, save_path)
-		# Writing summaries to Tensorboard at each training step
-		#summ = sess.run(merged)
-		#writer.add_summary(summ,step)
+		# If there is a model checkpoint saved, load the checkpoint. Else, initialize variables.
+		if load_file:
+			# Restore saved session
+			saver.restore(sess, load_path)
+		else:
+			# Initialize the variables
+			sess.run(init)
 
-		# Conditional statement for calculating time remaining, percent completion, and loss
-		if step % 10 == 0:
+		# Obtain start time
+		start_time = t.time()
 
-			# Report loss
-			print("\nAverage train loss at step", step, ":", np.mean(t_loss))
+		# For each training step, generate a random board
+		for step in range(0,num_training):
 
-			# Print predictions and targets
-			print("\nPredictions:")
-			print(predictions_)
-			print("\nTargets:")
-			print(targets_)
+			# Run game and generate feature and label batches
+			features, labels = generate_game(batch_size=batch_size,max_moves=max_moves,epsilon=epsilon,visualize=visualize,print_move=print_moves,algebraic=algebraic)
 
-			# Report percent completion
-			p_completion = 100*step/NUM_TRAINING
-			print("\nPercent completion: %.3f%%" % p_completion)
 
-			# Print time remaining
-			avg_elapsed_time = (t.time() - start_time)/(step+1)
-			sec_remaining = avg_elapsed_time*(NUM_TRAINING-step)
-			min_remaining = round(sec_remaining/60)
-			print("Time Remaining: %d minutes" % min_remaining)
+			# ----------------------------------------------------
+			# Optimize Model for Current Simulation
+			# ----------------------------------------------------			
+			# Print step
+			print("\nOptimizing at step", step)
+			# Run optimizer, loss, and predicted error ops in graph
+			predictions_, targets_, _, loss_ = sess.run([predictions, targets, optimizer, loss],feed_dict={inputs: np.reshape(features,(batch_size,768)), targets: np.expand_dims(labels,axis=1)})
 
-	# Write training loss to file
-	t_loss = np.array(t_loss)
-	with open(training_loss, 'a') as file_object:
-		np.savetxt(file_object, t_loss)
+			# Record loss
+			t_loss.append(loss_)
 
-	# Close the writer
-	writer.close()
+			# Save and overwrite the session at each training step
+			saver.save(sess, save_path)
+			# Writing summaries to Tensorboard at each training step
+			#summ = sess.run(merged)
+			#writer.add_summary(summ,step)
+
+			# Conditional statement for calculating time remaining, percent completion, and loss
+			if step % 10 == 0:
+
+				# Report loss
+				print("\nAverage train loss at step", step, ":", np.mean(t_loss))
+
+				# Print predictions and targets
+				#print("\nPredictions:")
+				#print(predictions_)
+				#print("\nTargets:")
+				#print(targets_)
+
+				# Report percent completion
+				p_completion = 100*step/num_training
+				print("\nPercent completion: %.3f%%" % p_completion)
+
+				# Print time remaining
+				avg_elapsed_time = (t.time() - start_time)/(step+1)
+				sec_remaining = avg_elapsed_time*(num_training-step)
+				min_remaining = round(sec_remaining/60)
+				print("Time Remaining: %d minutes" % min_remaining)
+
+		# Write training loss to file
+		t_loss = np.array(t_loss)
+		with open(training_loss, 'a') as file_object:
+			np.savetxt(file_object, t_loss)
+
+		# Close the writer
+		writer.close()
+
+
