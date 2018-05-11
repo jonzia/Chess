@@ -1,7 +1,7 @@
 # ----------------------------------------------------
 # Chess AI v1.0.3
 # Created By: Jonathan Zia
-# Last Edited: Tuesday, March 21 2018
+# Last Edited: Thursday, May 10 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf

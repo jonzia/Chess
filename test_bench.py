@@ -1,7 +1,7 @@
 # ----------------------------------------------------
 # Test Bench for Chess AI v1.0.2
 # Created By: Jonathan Zia
-# Last Edited: Tuesday, March 21 2018
+# Last Edited: Thursday, May 10 2018
 # Georgia Institute of Technology
 # ----------------------------------------------------
 import tensorflow as tf
@@ -253,10 +253,13 @@ targets = tf.placeholder(tf.float32,shape=(None,1),name='Targets')
 # Implementing Feedforward NN
 # ----------------------------------------------------
 # First fully-connected layer
-hidden = tf.contrib.layers.fully_connected(inputs,num_outputs=HIDDEN_UNITS)
+hidden1 = tf.contrib.layers.fully_connected(inputs,num_outputs=HIDDEN_UNITS)
 
 # Second fully-connected layer
-predictions = tf.contrib.layers.fully_connected(hidden,num_outputs=1,activation_fn=None)
+hidden2 = tf.contrib.layers.fully_connected(hidden1,num_outputs=HIDDEN_UNITS)
+
+# Output layer
+predictions = tf.contrib.layers.fully_connected(hidden2,num_outputs=1,activation_fn=None)
 
 
 # ----------------------------------------------------
