@@ -1,7 +1,7 @@
 # Chess RL v1.0.3
 
 ## Overview
-Tensorflow program that learns to play chess via Reinforcement Learning. Check out the [design blog](https://www.jonzia.me/projects/chess-reinforcement-learning) and [demo](https://youtu.be/PgVgvZ9_X8c)!
+Tensorflow program that learns to play chess via Reinforcement Learning. Check out the [demo](https://youtu.be/PgVgvZ9_X8c)!
 
 ## Description
 This program learns to play chess via reinforcement learning. The action-value functions are learned by training a neural network on the total return of randomly-initialized board states, determined by Monte Carlo simulations. The program follows an epsilon-greedy policy based on the most current action-value function approximations. As of v1.0.1, each training step is trained on batches of full-depth Monte Carlo simulations. The model architecture has two hidden layers, though this can be easily expanded or even updated to a convolutional architecture (to be included in a future release).
