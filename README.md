@@ -1,4 +1,4 @@
-# Chess RL v1.0.3
+# Chess v1.0.3
 
 ## Overview
 Tensorflow program that learns to play chess via Reinforcement Learning. Check out the [demo](https://youtu.be/PgVgvZ9_X8c)!
